@@ -2,16 +2,19 @@
 
 ## Общая информация
 
-**Продолжительность:** 9 занятий (включая ознакомительное)
-**Формат:** 8 лекций (90 мин) + 8 лабораторных работ (180 мин) + 1 ознакомительное занятие
+**Продолжительность:** 10 занятий (включая ознакомительное)
+**Формат:** 9 лекций (90 мин) + 9 лабораторных работ (180 мин) + 1 ознакомительное занятие
 **Целевая аудитория:** Студенты с поверхностным знанием HTML, CSS, JavaScript и React
 
-> **Примечание для текущего семестра:** Занятия 7-8 (React Native и финализация) переносятся на следующий семестр. В этом семестре завершаем на занятии 6.  
+> **Примечание для текущего семестра:** Занятия 8-9 (React Native и Production Deployment) переносятся на следующий семестр. В этом семестре завершаем на занятии 7.
+
+
 
 ## Технологический стек
 
 - **Основные технологии:** TypeScript, React, Vite, Tailwind CSS
 - **Управление состоянием:** MobX, Zustand
+- **Тестирование:** Vitest, React Testing Library, Playwright
 - **Мобильная разработка:** React + strict-dom
 - **Инструменты:** ESLint, Prettier, Git
 
@@ -143,7 +146,7 @@
 ## Занятие 5: HTTP и API Fundamentals
 ### Лекция: Глубокое погружение в работу с API
 
-**Часть 1: HTTP протокол (20-25 мин)**
+**Часть 1: HTTP протокол (2**
 - **HTTP методы детально:**
   - GET (идемпотентность, кэширование)
   - POST vs PUT vs PATCH (семантика, idempotency)
@@ -156,7 +159,7 @@
   - 5xx: серверные ошибки (500, 502, 503)
 - **Headers:** Content-Type, Authorization, Cache-Control, CORS
 
-**Часть 2: Форматы передачи данных (15-20 мин)**
+**Часть 2: Форматы передачи данных (1**
 - **JSON:** стандарт для современных API
 - **Query params:** фильтрация, сортировка, пагинация
 - **URL/Path params:** REST ресурсы
@@ -165,7 +168,7 @@
 - **XML:** legacy APIs (краткий обзор)
 - **gRPC + Protocol Buffers:** обзор (когда нужна производительность)
 
-**Часть 3: REST архитектура (15 мин)**
+**Часть 3: REST архитектура**
 - Принципы REST
 - **CRUD → HTTP методы маппинг:**
   - Create → POST /resources
@@ -175,13 +178,13 @@
 - Именование endpoints (множественное число, вложенность)
 - Stateless коммуникация
 
-**Часть 4: Real-time и альтернативы (10-15 мин)**
+**Часть 4: Real-time и альтернативы (1**
 - **WebSockets:** двусторонняя связь
 - **Server-Sent Events (SSE):** уведомления от сервера
 - **Long polling:** историческая справка
 - **HTTP/2 и gRPC:** мультиплексирование, streaming
 
-**Часть 5: Валидация данных (10-15 мин)**
+**Часть 5: Валидация данных (1**
 - **Клиентская vs серверная валидация:**
   - Почему нужны обе
   - UX vs безопасность
@@ -194,7 +197,7 @@
   - Бизнес-правила (ограничения, форматы)
   - Референциальная (внешние ключи, связи)
 
-**Часть 6: AAA - Authentication, Authorization, Accounting (20-25 мин)**
+**Часть 6: AAA - Authentication, Authorization, Accounting (2**
 - **Различие понятий:**
   - Authentication (кто ты?)
   - Authorization (что тебе можно?)
@@ -268,10 +271,88 @@
 
 ---
 
-## Занятие 7: Cross-platform разработка с React Native
+## Занятие 7: Testing - Vitest & Playwright
+### Лекция: Автоматическое тестирование React приложений
+
+**Часть 1: Введение в тестирование**
+- Зачем нужно тестирование (уверенность, документация, экономия времени)
+- Тестовая пирамида: Unit (60-70%), Integration (20-30%), E2E (5-10%)
+- **Jest vs Vitest:**
+  - Jest - индустриальный стандарт (70% проектов)
+  - Vitest - современная альтернатива (в 2-10 раз быстрее)
+  - API на 95% совместим - знание переносится
+  - Vitest для курса: нативная интеграция с Vite, лучший DX
+
+**Часть 2: Vitest - Unit & Component тесты**
+- Setup Vitest + React Testing Library
+- Структура теста: AAA pattern (Arrange, Act, Assert)
+- Matchers (assertions): toBe, toEqual, toContain, toThrow
+- **Моки (Mocking):**
+  - Mock функций: `vi.fn()` (в Jest: `jest.fn()`)
+  - Mock модулей: `vi.mock()`
+  - Spy на методы: `vi.spyOn()`
+- **React Testing Library:**
+  - Философия: тестируем как пользователь
+  - Queries приоритеты: getByRole → getByLabelText → getByText → getByTestId
+  - User Events: `userEvent.click()`, `userEvent.type()`
+  - Async testing: `findBy*`, `waitFor()`
+- **Jest-DOM matchers:** toBeInTheDocument, toBeVisible, toBeDisabled
+- Тестирование MobX stores
+
+**Часть 3: Playwright - E2E тестирование**
+- Что такое E2E и когда использовать
+- Setup Playwright (автозапуск dev-сервера)
+- Написание E2E теста (полный user flow)
+- Локаторы: getByRole, getByText, CSS selectors
+- Actions: click, fill, type, select
+- Assertions: toBeVisible, toHaveText, toHaveValue
+- UI Mode для debugging
+
+**Часть 4: Best Practices**
+- Тестируйте поведение, не implementation details
+- Один тест = одна проверка
+- Не мокайте всё подряд
+- Используйте правильные селекторы (getByRole)
+- Coverage ≠ качество (70-80% достаточно)
+
+### Лабораторная работа: Тестирование Quiz приложения
+
+**Задачи:**
+
+**Часть 1: Setup**
+- Установка Vitest, RTL, Playwright
+- Конфигурация vitest.config.ts и playwright.config.ts
+- Создание setup файлов
+
+**Часть 2: Рефакторинг на компоненты**
+- Декомпозиция Task4.tsx на переиспользуемые компоненты:
+  - QuizButton - переиспользуемая кнопка
+  - MultipleSelectQuestion - вопросы с выбором
+  - EssayQuestion - текстовые вопросы
+  - QuizProgress - индикатор прогресса
+
+**Часть 3: Unit тесты**
+- Тесты для utils (calculateScore, getCorrectAnswersCount)
+- Тесты для gameStore (toggleAnswer, nextQuestion, computed properties)
+- ≥10 unit тестов
+
+**Часть 4: Component тесты**
+- Тесты для QuizButton (render, onClick, disabled)
+- Тесты для EssayQuestion (textarea, character count, onChange)
+- Тесты для MultipleSelectQuestion (options, selection, toggle)
+- ≥3 компонента покрыты тестами
+
+**Часть 5: E2E тесты (30 мин, опционально)**
+- E2E тест: прохождение квиза
+- E2E тест: разные типы вопросов
+- Проверка полного user flow
+
+---
+
+## Занятие 8: Cross-platform разработка с React Native
 ### Лекция: React + ReactStrict-DOM → React Native
 
-> **Примечание:** Занятия 7 и 8 переносятся на следующий семестр для обеспечения достаточного времени на освоение материала.
+> **Примечание:** Занятия 8 и 9 переносятся на следующий семестр для обеспечения достаточного времени на освоение материала.
 
 **Часть 1: Теория ReactStrict-DOM**
 - Концепция "write once, run everywhere"
@@ -325,28 +406,27 @@
 
 ---
 
-## Занятие 8: Финализация проекта
-### Лекция: Итого
+## Занятие 9: Production Deployment & Optimization
+
+> **Примечание:** Это занятие переносится на следующий семестр. Детальные материалы в разработке.
+
+### Лекция: Подготовка к production (90 мин)
 
 **Темы:**
-- Build оптимизация и code splitting
+- Build оптимизация (Code Splitting, Lazy Loading, Bundle analysis)
 - Environment variables и конфигурация
-- Основы тестирования в production
-- CI/CD пайплайны
-- Безопасность + best practices
-- Мониторинг и аналитика
-- Обзор пройденного материала
+- Deployment platforms (Vercel, Netlify, Cloudflare Pages, GitHub Pages)
+- Monitoring и Analytics (Sentry, Web Vitals, Google Analytics)
+- Security best practices (CSP, HTTPS, XSS protection)
 
-### Лабораторная работа: Финальная интеграция
+### Лабораторная работа: Production deployment
 
 **Задачи:**
-- Завершение комплексного проекта
-- Оптимизация bundle size
-- Добавление тестов к ключевым компонентам
-- ??? Деплой ???
-- Code review и рефакторинг
-- Презентация финальных проектов
-- ??? Документирование кода ???
+- Оптимизация bundle size и lazy loading
+- Production build и deployment на Vercel/Netlify
+- Интеграция Sentry для error tracking
+- Lighthouse score ≥90
+- CI/CD pipeline (опционально)
 
 ---
 
@@ -357,16 +437,21 @@
 ### Технические требования:
 - **Frontend:** TypeScript + React + Vite + Tailwind CSS
 - **State Management:** MobX для бизнес-логики + Zustand для UI состояния
-- **Мобильная поддержка:** Адаптивный дизайн с элементами strict-dom
-- **API интеграция:** Работа с внешними API и обработка ошибок
-- **Production ready:** Оптимизированная сборка и деплой
+- **API интеграция:** React Query + OpenAPI генерация клиентов
+- **Тестирование:** Vitest (unit/component) + Playwright (E2E)
+- **Мобильная поддержка:** React Native + ReactStrict-DOM (след. семестр)
+- **Production ready:** Оптимизированная сборка, деплой на Vercel/Netlify
 
 ### Функциональные возможности:
-- Аутентификация пользователей
-- CRUD операции с данными
+- Аутентификация пользователей (GitHub OAuth)
+- CRUD операции с данными через API
 - Responsive дизайн для всех устройств
 - Обработка состояний загрузки и ошибок
-- Кэширование и оптимистичные обновления
+- Кэширование данных с React Query
+- Test coverage ≥70%
+- Мобильное приложение (React Native, след. семестр)
+- Monitoring с Sentry
+- Lighthouse score ≥90
 
 ---
 
@@ -392,6 +477,10 @@
 - Использовать современные инструменты разработки (Vite, Tailwind)
 - Эффективно управлять состоянием приложения (MobX, Zustand)
 - Создавать адаптивные и мобильные интерфейсы
-- Интегрироваться с внешними API
-- ? Оптимизировать производительность React приложений ?
+- Интегрироваться с внешними API (REST, OAuth, React Query)
+- Писать автоматические тесты (Vitest, RTL, Playwright)
+- Разрабатывать cross-platform приложения (React Native)
+- Оптимизировать производительность React приложений
+- Деплоить production-ready приложения (Vercel, Netlify)
+- Настраивать monitoring и error tracking (Sentry)
 - Следовать современным best practices веб-разработки

@@ -1,7 +1,9 @@
 import axios, { AxiosRequestConfig } from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL:
+    (import.meta as unknown as { env: Record<string, any> }).env
+      ?.VITE_API_URL || 'http://localhost:3000',
 })
 
 apiClient.interceptors.request.use(config => {
@@ -25,7 +27,6 @@ apiClient.interceptors.response.use(
 
 export default apiClient
 
-// Функция для Orval
 export const customFetch = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
