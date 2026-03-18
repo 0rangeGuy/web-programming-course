@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { verify } from "hono/jwt";
 import { sessionService } from "../services/sessionService.js";
 import { prisma } from "../db/prisma.js";
+import { answerSchema } from "../utils/validation.js";
 
 const sessionsRoute = new Hono();
 
@@ -80,11 +81,8 @@ sessionsRoute.post("/", async (c) => {
   }
 });
 
-/**
- * POST /api/sessions/:id/answers - добавить ответ
- */
+// ✅ POST /api/sessions/:id/answers - добавить ответ (С ВАЛИДАЦИЕЙ)
 sessionsRoute.post("/:id/answers", async (c) => {
-  // Проверяем авторизацию
   const result = await getUserFromToken(c);
   if ("error" in result) {
     return c.json({ error: result.error }, result.status);
@@ -93,11 +91,21 @@ sessionsRoute.post("/:id/answers", async (c) => {
 
   try {
     const body = await c.req.json();
-    const { questionId, userAnswer } = body;
 
-    if (!questionId || userAnswer === undefined) {
-      return c.json({ error: "questionId and userAnswer are required" }, 400);
+    // ВАЛИДАЦИЯ через Zod
+    const parsed = answerSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return c.json(
+        {
+          error: "Validation failed",
+          details: parsed.error.issues,
+        },
+        400,
+      );
     }
+
+    const { questionId, userAnswer } = parsed.data;
 
     const answer = await sessionService.submitAnswer(
       sessionId,
