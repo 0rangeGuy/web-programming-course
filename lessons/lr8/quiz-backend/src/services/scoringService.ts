@@ -1,15 +1,9 @@
 /**
  * Сервис для подсчёта баллов за ответы
- * Содержит бизнес-логику оценки разных типов вопросов
  */
 export class ScoringService {
   /**
    * Оценивает вопрос с множественным выбором (multiple-select)
-   * Правила: +1 за правильный выбор, -0.5 за неправильный, но не меньше 0
-   *
-   * @param correctAnswers - Массив правильных ответов (например, [1, 3, 5])
-   * @param studentAnswers - Массив ответов студента
-   * @returns Итоговый балл (число с плавающей точкой)
    */
   scoreMultipleSelect(correctAnswers: any[], studentAnswers: any[]): number {
     // Базовая проверка
@@ -17,70 +11,123 @@ export class ScoringService {
       return 0;
     }
 
-    // Преобразуем в Set для удобства поиска
     const correctSet = new Set(correctAnswers);
     const studentSet = new Set(studentAnswers);
 
     let score = 0;
 
-    // Проверяем каждый ответ студента
     for (const answer of studentAnswers) {
       if (correctSet.has(answer)) {
-        score += 1; // Правильный ответ: +1
+        score += 1;
       } else {
-        score -= 0.5; // Неправильный ответ: -0.5
+        score -= 0.5;
       }
     }
 
-    // Балл не может быть ниже 0
     return Math.max(0, score);
   }
 
   /**
-   * Оценивает эссе на основе рубрики
-   *
-   * @param grades - Массив оценок по критериям (например, [4, 5, 3])
-   * @param rubric - Рубрика с максимальными баллами (например, [5, 5, 5])
-   * @returns Итоговый балл
-   */
-  scoreEssay(grades: number[], rubric: number[]): number {
-    if (!Array.isArray(grades) || !Array.isArray(rubric)) {
-      return 0;
-    }
-
-    // Суммируем баллы, но не больше максимума по каждому критерию
-    let total = 0;
-    for (let i = 0; i < grades.length; i++) {
-      const maxPoints = rubric[i] || 0;
-      const grade = Math.min(grades[i] || 0, maxPoints);
-      total += Math.max(0, grade); // Не может быть отрицательным
-    }
-
-    return total;
-  }
-
-  /**
    * Оценивает вопрос с выбором одного ответа
-   *
-   * @param correctAnswer - Правильный ответ
-   * @param studentAnswer - Ответ студента
-   * @param points - Максимальные баллы за вопрос
-   * @returns Баллы (points если правильно, 0 если нет)
    */
   scoreSingleSelect(
     correctAnswer: any,
     studentAnswer: any,
     points: number = 1,
   ): number {
-    // Простое сравнение
-    if (JSON.stringify(correctAnswer) === JSON.stringify(studentAnswer)) {
+    // Приводим оба значения к одному типу и убираем лишние кавычки
+    const correctStr = String(correctAnswer).replace(/^"|"$/g, "").trim();
+    const studentStr = String(studentAnswer).replace(/^"|"$/g, "").trim();
+
+    console.log("Comparing:", correctStr, "vs", studentStr); // для отладки
+
+    if (correctStr === studentStr) {
       return points;
     }
     return 0;
   }
+  /**
+   * Оценивает эссе на основе рубрики
+   */
+  scoreEssay(grades: number[], rubric: number[]): number {
+    if (!Array.isArray(grades) || !Array.isArray(rubric)) {
+      return 0;
+    }
+
+    let total = 0;
+    for (let i = 0; i < grades.length; i++) {
+      const maxPoints = rubric[i] || 0;
+      const grade = Math.min(grades[i] || 0, maxPoints);
+      total += Math.max(0, grade);
+    }
+
+    return total;
+  }
+
+  /**
+   * Универсальный метод для оценки вопроса по его типу
+   */
+  scoreQuestion(
+    questionType: string,
+    correctAnswer: string | null,
+    userAnswer: string,
+    points: number = 1,
+  ): { score: number | null; isCorrect: boolean | null } {
+    // Парсим правильный ответ
+    let parsedCorrect: any = null;
+    try {
+      parsedCorrect = correctAnswer ? JSON.parse(correctAnswer) : null;
+    } catch {
+      parsedCorrect = correctAnswer; // если не JSON, используем как есть
+    }
+
+    // Для single-select userAnswer уже строка, не парсим её
+    let parsedUser: any = userAnswer;
+
+    // Для других типов пытаемся распарсить
+    if (questionType !== "single-select") {
+      try {
+        parsedUser = JSON.parse(userAnswer);
+      } catch {
+        parsedUser = userAnswer;
+      }
+    }
+
+    switch (questionType) {
+      case "single-select":
+        // Приводим к строкам и сравниваем
+        const correctStr = String(parsedCorrect).trim();
+        const userStr = String(parsedUser).trim();
+        const score = correctStr === userStr ? points : 0;
+        return {
+          score,
+          isCorrect: score === points,
+        };
+
+      case "multiple-select":
+        const correctArray = Array.isArray(parsedCorrect) ? parsedCorrect : [];
+        const userArray = Array.isArray(parsedUser) ? parsedUser : [];
+        const multiScore = this.scoreMultipleSelect(correctArray, userArray);
+        return {
+          score: Math.min(multiScore, points),
+          isCorrect: multiScore >= points,
+        };
+
+      case "essay":
+        return {
+          score: null,
+          isCorrect: null,
+        };
+
+      default:
+        return {
+          score: null,
+          isCorrect: null,
+        };
+    }
+  }
 }
 
-// Экспортируем синглтон для использования во всём приложении
 export const scoringService = new ScoringService();
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -123,4 +170,4 @@ const testScoring = () => {
 };
 
 // Раскомментируйте для теста:
-testScoring();
+//testScoring();

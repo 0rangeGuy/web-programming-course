@@ -1,4 +1,5 @@
 import authRoute from "./routes/auth.js";
+import sessionsRoute from "./routes/sessions.js";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import "dotenv/config";
@@ -10,6 +11,7 @@ app.get("/health", (c) => {
 });
 
 app.route("/api/auth", authRoute);
+app.route("/api/sessions", sessionsRoute);
 
 serve(
   {
