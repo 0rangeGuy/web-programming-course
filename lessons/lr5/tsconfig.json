@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src", "quiz-backend/src/index.ts", "quiz-backend/src/utils"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
