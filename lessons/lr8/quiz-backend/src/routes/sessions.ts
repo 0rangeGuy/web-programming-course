@@ -1,3 +1,4 @@
+// декларация типов для TypeScript
 declare module "hono" {
   interface ContextVariableMap {
     user: any; // Или более строгий тип
@@ -16,27 +17,50 @@ sessionsRoute.use("*", authMiddleware);
 
 /**
  * POST /api/sessions - создать новую сессию
+ *
+ * Возвращает:
+ * - session: информация о сессии
+ * - questions: список вопросов для прохождения (без правильных ответов)
  */
 sessionsRoute.post("/", async (c) => {
   // Пользователь уже в контексте после authMiddleware
   const user = c.get("user");
 
   try {
-    // Получаем количество вопросов
-    const questionsCount = await prisma.question.count();
+    // 1. Получаем все вопросы из базы (с категориями)
+    const questions = await prisma.question.findMany({
+      include: {
+        category: true, // включаем категорию для каждого вопроса
+      },
+      orderBy: {
+        createdAt: "asc", // сортируем по дате создания
+      },
+    });
 
-    if (questionsCount === 0) {
+    if (questions.length === 0) {
       return c.json({ error: "No questions available" }, 400);
     }
 
-    // Создаём сессию
+    // 2. Создаём сессию
     const session = await sessionService.createSession(user.id, 60);
 
+    // 3. Подготавливаем вопросы для отправки (скрываем правильные ответы)
+    const questionsForClient = questions.map((question) => ({
+      id: question.id,
+      text: question.text,
+      type: question.type,
+      category: question.category,
+      points: question.points,
+      // ❗ НЕ отправляем correctAnswer
+    }));
+
+    // 4. Возвращаем сессию + вопросы
     return c.json({
       session: {
         ...session,
-        totalQuestions: questionsCount,
+        totalQuestions: questions.length,
       },
+      questions: questionsForClient,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
