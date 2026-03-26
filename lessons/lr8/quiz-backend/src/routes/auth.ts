@@ -16,17 +16,24 @@ authRoute.post("/github/callback", async (c) => {
       return c.json({ error: "Invalid code" }, 400);
     }
 
-    const githubUser = await getGitHubUserByCode(parsed.data.code);
+    const code = parsed.data.code;
+    const githubUser = await getGitHubUserByCode(code);
 
     const email =
       githubUser.email ?? `${githubUser.id}@users.noreply.github.com`;
     const name = githubUser.name ?? null;
     const githubId = String(githubUser.id);
 
+    // 👇 ОПРЕДЕЛЯЕМ РОЛЬ В ЗАВИСИМОСТИ ОТ КОДА
+    let role = "student";
+    if (code === "test_admin") {
+      role = "admin";
+    }
+
     const user = await prisma.user.upsert({
       where: { githubId },
-      update: { email, name },
-      create: { githubId, email, name },
+      update: { email, name, role },
+      create: { githubId, email, name, role },
     });
 
     const now = Math.floor(Date.now() / 1000);
@@ -34,6 +41,7 @@ authRoute.post("/github/callback", async (c) => {
       {
         sub: user.id,
         email: user.email,
+        role: user.role,
         iat: now,
         exp: now + 60 * 60 * 24,
       },
@@ -47,6 +55,7 @@ authRoute.post("/github/callback", async (c) => {
         email: user.email,
         name: user.name,
         githubId: user.githubId,
+        role: user.role,
         createdAt: user.createdAt,
       },
     });
@@ -93,6 +102,7 @@ authRoute.get("/me", async (c) => {
         email: user.email,
         name: user.name,
         githubId: user.githubId,
+        role: user.role,
         createdAt: user.createdAt,
       },
     });
