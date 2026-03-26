@@ -1,62 +1,25 @@
+declare module "hono" {
+  interface ContextVariableMap {
+    user: any; // Или более строгий тип
+  }
+}
 import { Hono } from "hono";
-import { verify } from "hono/jwt";
 import { sessionService } from "../services/sessionService.js";
 import { prisma } from "../db/prisma.js";
 import { answerSchema } from "../utils/validation.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const sessionsRoute = new Hono();
 
-// Типы для HTTP статусов
-type AuthError = {
-  error: string;
-  status: 401 | 500; // Только конкретные статусы
-};
-
-/**
- * Вспомогательная функция для проверки JWT и получения пользователя
- */
-async function getUserFromToken(c: any): Promise<{ user: any } | AuthError> {
-  const authHeader = c.req.header("Authorization");
-
-  if (!authHeader?.startsWith("Bearer ")) {
-    return { error: "Unauthorized", status: 401 };
-  }
-
-  const token = authHeader.slice(7);
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    return { error: "JWT_SECRET not configured", status: 500 };
-  }
-
-  try {
-    const payload = await verify(token, jwtSecret, "HS256");
-    const userId = payload.sub as string;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return { error: "User not found", status: 401 };
-    }
-
-    return { user };
-  } catch {
-    return { error: "Invalid token", status: 401 };
-  }
-}
+// Применяем middleware ко всем маршрутам в этом роутере
+sessionsRoute.use("*", authMiddleware);
 
 /**
  * POST /api/sessions - создать новую сессию
  */
 sessionsRoute.post("/", async (c) => {
-  // Проверяем авторизацию
-  const result = await getUserFromToken(c);
-  if ("error" in result) {
-    return c.json({ error: result.error }, result.status);
-  }
-  const user = result.user;
+  // Пользователь уже в контексте после authMiddleware
+  const user = c.get("user");
 
   try {
     // Получаем количество вопросов
@@ -81,18 +44,16 @@ sessionsRoute.post("/", async (c) => {
   }
 });
 
-// ✅ POST /api/sessions/:id/answers - добавить ответ (С ВАЛИДАЦИЕЙ)
+/**
+ * POST /api/sessions/:id/answers - добавить ответ
+ */
 sessionsRoute.post("/:id/answers", async (c) => {
-  const result = await getUserFromToken(c);
-  if ("error" in result) {
-    return c.json({ error: result.error }, result.status);
-  }
   const sessionId = c.req.param("id");
 
   try {
     const body = await c.req.json();
 
-    // ВАЛИДАЦИЯ через Zod
+    // Валидация через Zod
     const parsed = answerSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -124,12 +85,7 @@ sessionsRoute.post("/:id/answers", async (c) => {
  * GET /api/sessions/:id - получить сессию с деталями
  */
 sessionsRoute.get("/:id", async (c) => {
-  // Проверяем авторизацию
-  const result = await getUserFromToken(c);
-  if ("error" in result) {
-    return c.json({ error: result.error }, result.status);
-  }
-  const user = result.user;
+  const user = c.get("user");
   const sessionId = c.req.param("id");
 
   try {
@@ -171,11 +127,6 @@ sessionsRoute.get("/:id", async (c) => {
  * POST /api/sessions/:id/submit - завершить сессию
  */
 sessionsRoute.post("/:id/submit", async (c) => {
-  // Проверяем авторизацию
-  const result = await getUserFromToken(c);
-  if ("error" in result) {
-    return c.json({ error: result.error }, result.status);
-  }
   const sessionId = c.req.param("id");
 
   try {
