@@ -1,5 +1,4 @@
 node_modules
-dist
 .git
 .github
 .env
@@ -8,3 +7,7 @@ dist
 *.log
 coverage
 .DS_Store
+dist
+**/*.test.ts
+**/tests/**
+tests

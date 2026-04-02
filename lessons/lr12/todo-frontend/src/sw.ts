@@ -2,38 +2,100 @@
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
-const CACHE_NAME = 'todo-pwa-starter-v1';
+const CACHE_NAME = "todo-pwa-v1";
+const STATIC_ASSETS = ["/", "/index.html", "/manifest.webmanifest"];
 
-sw.addEventListener('install', (event: ExtendableEvent) => {
+// Установка SW — кэшируем статику
+sw.addEventListener("install", (event: ExtendableEvent) => {
   event.waitUntil(
     (async () => {
-      // TODO(PWA-SW-1): предкэшируйте shell-ресурсы приложения.
-      // Пример: '/', '/index.html'.
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(STATIC_ASSETS);
       await sw.skipWaiting();
-    })()
+    })(),
   );
 });
 
-sw.addEventListener('activate', (event: ExtendableEvent) => {
+// Активация — очищаем старые кэши
+sw.addEventListener("activate", (event: ExtendableEvent) => {
   event.waitUntil(
     (async () => {
-      // TODO(PWA-SW-2): очистите старые кэши и оставьте только актуальную версию.
-      // Пример шагов:
-      // 1) получить список ключей через caches.keys()
-      // 2) удалить все, кроме CACHE_NAME
+      const keys = await caches.keys();
+      const deletePromises = keys
+        .filter((key) => key !== CACHE_NAME)
+        .map((key) => caches.delete(key));
+      await Promise.all(deletePromises);
       await sw.clients.claim();
-    })()
+    })(),
   );
 });
 
-sw.addEventListener('fetch', (event: FetchEvent) => {
-  if (event.request.method !== 'GET') return;
+// Перехват fetch-запросов
+sw.addEventListener("fetch", (event: FetchEvent) => {
+  // Пропускаем не-GET запросы
+  if (event.request.method !== "GET") return;
 
-  // TODO(PWA-SW-3): реализуйте стратегию для GET-запросов.
-  // Рекомендуемый минимум для лабы:
-  // 1) network-first для HTML
-  // 2) fallback на offline.html
-  // 3) cache-first или stale-while-revalidate для статических ресурсов
+  const url = new URL(event.request.url);
 
-  event.respondWith(fetch(event.request));
+  // API запросы не кэшируем (они будут синхронизироваться через очередь)
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Стратегия: cache-first для статики
+  event.respondWith(
+    (async () => {
+      // Пытаемся получить из кэша
+      const cachedResponse = await caches.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      // Если нет в кэше — идём в сеть
+      try {
+        const networkResponse = await fetch(event.request);
+        // Кэшируем успешные ответы
+        if (networkResponse.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, networkResponse.clone());
+        }
+        return networkResponse;
+      } catch {
+        // Fallback для офлайн-режима
+        const offlineFallback = await caches.match("/index.html");
+        if (offlineFallback) {
+          return offlineFallback;
+        }
+        return new Response("Offline - page not available", {
+          status: 503,
+          statusText: "Service Unavailable",
+        });
+      }
+    })(),
+  );
+  // В обработчике fetch, после проверки /api/
+  if (url.pathname === "/api/todos" && event.request.method === "GET") {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+
+        try {
+          const response = await fetch(event.request);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, response.clone());
+          return response;
+        } catch {
+          return (
+            cached ||
+            new Response(JSON.stringify({ items: [] }), {
+              headers: { "Content-Type": "application/json" },
+            })
+          );
+        }
+      })(),
+    );
+    return;
+  }
 });

@@ -45,7 +45,7 @@ paths:
       summary: Инициировать OAuth авторизацию через GitHub
       description: Перенаправляет на GitHub для авторизации
       responses:
-        '302':
+        "302":
           description: Редирект на GitHub OAuth
           headers:
             Location:
@@ -73,20 +73,20 @@ paths:
                   description: Authorization code от GitHub
                   example: "abc123def456"
       responses:
-        '200':
+        "200":
           description: Успешная авторизация
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
           description: Ошибка при обмене кода или получении данных от GitHub
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "ServerError"
                 message: "Failed to authenticate with GitHub"
@@ -105,14 +105,14 @@ paths:
             type: string
           description: Authorization code от GitHub (игнорируется в mock-версии)
       responses:
-        '200':
+        "200":
           description: Успешная авторизация (mock)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/AuthResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/auth/me:
     get:
@@ -122,14 +122,14 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Информация о пользователе
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/auth/profile:
     put:
@@ -158,7 +158,7 @@ paths:
                   minLength: 1
                   example: "Иванов"
       responses:
-        '200':
+        "200":
           description: Профиль обновлен
           content:
             application/json:
@@ -186,15 +186,15 @@ paths:
                   lastName:
                     type: string
                   role:
-                    $ref: '#/components/schemas/UserRole'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '422':
+                    $ref: "#/components/schemas/UserRole"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
           description: Ошибка валидации
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "ValidationError"
                 message: "firstName is required"
@@ -207,7 +207,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Успешный выход
           content:
             application/json:
@@ -226,12 +226,12 @@ paths:
       summary: Получить текущий режим работы системы
       description: Возвращает текущий режим (Game или Battle) и его настройки
       responses:
-        '200':
+        "200":
           description: Информация о режиме
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModeInfo'
+                $ref: "#/components/schemas/ModeInfo"
 
     put:
       tags:
@@ -245,20 +245,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateModeRequest'
+              $ref: "#/components/schemas/UpdateModeRequest"
       responses:
-        '200':
+        "200":
           description: Режим успешно изменен
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModeInfo'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/ModeInfo"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   # ============ CATEGORIES ============
   /api/categories:
@@ -268,7 +268,7 @@ paths:
       summary: Получить список тем/категорий
       description: Возвращает все доступные темы для вопросов
       responses:
-        '200':
+        "200":
           description: Список категорий
           content:
             application/json:
@@ -278,7 +278,7 @@ paths:
                   categories:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Category'
+                      $ref: "#/components/schemas/Category"
 
     post:
       tags:
@@ -292,20 +292,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCategoryRequest'
+              $ref: "#/components/schemas/CreateCategoryRequest"
       responses:
-        '201':
+        "201":
           description: Категория создана
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/categories/{categoryId}:
     put:
@@ -316,28 +316,28 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/CategoryId'
+        - $ref: "#/components/parameters/CategoryId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCategoryRequest'
+              $ref: "#/components/schemas/UpdateCategoryRequest"
       responses:
-        '200':
+        "200":
           description: Категория обновлена
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Category'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/Category"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
     delete:
       tags:
@@ -347,16 +347,16 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/CategoryId'
+        - $ref: "#/components/parameters/CategoryId"
       responses:
-        '204':
+        "204":
           description: Категория удалена
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ============ QUESTIONS (Student) ============
   /api/questions:
@@ -379,12 +379,12 @@ paths:
           in: query
           description: Фильтр по сложности
           schema:
-            $ref: '#/components/schemas/Difficulty'
+            $ref: "#/components/schemas/Difficulty"
         - name: type
           in: query
           description: Фильтр по типу вопроса
           schema:
-            $ref: '#/components/schemas/QuestionType'
+            $ref: "#/components/schemas/QuestionType"
         - name: limit
           in: query
           schema:
@@ -399,7 +399,7 @@ paths:
             minimum: 0
             default: 0
       responses:
-        '200':
+        "200":
           description: Список вопросов
           content:
             application/json:
@@ -409,21 +409,21 @@ paths:
                   questions:
                     type: array
                     items:
-                      $ref: '#/components/schemas/QuestionPreview'
+                      $ref: "#/components/schemas/QuestionPreview"
                   total:
                     type: integer
                   limit:
                     type: integer
                   offset:
                     type: integer
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
           description: Вопросы скрыты в Battle Mode
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
                 error: "Forbidden"
                 message: "Questions are hidden in Battle Mode. Create a session to start."
@@ -445,11 +445,11 @@ paths:
         - name: difficulty
           in: query
           schema:
-            $ref: '#/components/schemas/Difficulty'
+            $ref: "#/components/schemas/Difficulty"
         - name: type
           in: query
           schema:
-            $ref: '#/components/schemas/QuestionType'
+            $ref: "#/components/schemas/QuestionType"
         - name: limit
           in: query
           schema:
@@ -461,7 +461,7 @@ paths:
             type: integer
             default: 0
       responses:
-        '200':
+        "200":
           description: Список вопросов с правильными ответами
           content:
             application/json:
@@ -471,13 +471,13 @@ paths:
                   questions:
                     type: array
                     items:
-                      $ref: '#/components/schemas/QuestionFull'
+                      $ref: "#/components/schemas/QuestionFull"
                   total:
                     type: integer
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
     post:
       tags:
@@ -491,20 +491,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateQuestionRequest'
+              $ref: "#/components/schemas/CreateQuestionRequest"
       responses:
-        '201':
+        "201":
           description: Вопрос создан
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionFull'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/QuestionFull"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/admin/questions/{questionId}:
     get:
@@ -514,20 +514,20 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/QuestionId'
+        - $ref: "#/components/parameters/QuestionId"
       responses:
-        '200':
+        "200":
           description: Полная информация о вопросе
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionFull'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/QuestionFull"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
     put:
       tags:
@@ -536,28 +536,28 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/QuestionId'
+        - $ref: "#/components/parameters/QuestionId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateQuestionRequest'
+              $ref: "#/components/schemas/UpdateQuestionRequest"
       responses:
-        '200':
+        "200":
           description: Вопрос обновлен
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionFull'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/QuestionFull"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
     delete:
       tags:
@@ -566,16 +566,16 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/QuestionId'
+        - $ref: "#/components/parameters/QuestionId"
       responses:
-        '204':
+        "204":
           description: Вопрос удален
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ============ SESSIONS ============
   /api/sessions:
@@ -593,18 +593,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSessionRequest'
+              $ref: "#/components/schemas/CreateSessionRequest"
       responses:
-        '201':
+        "201":
           description: Сессия создана
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/SessionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/sessions/{sessionId}:
     get:
@@ -614,20 +614,20 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Информация о сессии
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/SessionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/sessions/{sessionId}/answers:
     post:
@@ -641,34 +641,34 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubmitAnswerRequest'
+              $ref: "#/components/schemas/SubmitAnswerRequest"
       responses:
-        '200':
+        "200":
           description: Ответ принят и проверен (для multiple-select)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnswerResult'
-        '202':
+                $ref: "#/components/schemas/AnswerResult"
+        "202":
           description: Ответ принят, ожидает ручной проверки (для essay)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnswerPending'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/AnswerPending"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/sessions/{sessionId}/submit:
     post:
@@ -679,22 +679,22 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Сессия завершена
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResults'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/SessionResults"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/sessions/{sessionId}/results:
     get:
@@ -704,20 +704,20 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Результаты сессии
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResults'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/SessionResults"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ============ ADMIN USERS ============
   /api/admin/users:
@@ -739,7 +739,7 @@ paths:
             type: integer
             default: 0
       responses:
-        '200':
+        "200":
           description: Список пользователей
           content:
             application/json:
@@ -749,13 +749,13 @@ paths:
                   users:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserWithStats'
+                      $ref: "#/components/schemas/UserWithStats"
                   total:
                     type: integer
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /api/admin/users/{userId}/difficulty:
     put:
@@ -781,7 +781,7 @@ paths:
                 - difficulty
               properties:
                 difficulty:
-                  $ref: '#/components/schemas/Difficulty'
+                  $ref: "#/components/schemas/Difficulty"
                 questionCount:
                   type: integer
                   description: Количество вопросов для этого студента
@@ -793,20 +793,20 @@ paths:
                     type: string
                   description: Ограничить конкретными темами (опционально)
       responses:
-        '200':
+        "200":
           description: Настройки обновлены
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDifficultySettings'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/UserDifficultySettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/admin/users/{userId}/results:
     get:
@@ -822,7 +822,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Результаты пользователя
           content:
             application/json:
@@ -832,17 +832,17 @@ paths:
                   userId:
                     type: string
                   user:
-                    $ref: '#/components/schemas/User'
+                    $ref: "#/components/schemas/User"
                   sessions:
                     type: array
                     items:
-                      $ref: '#/components/schemas/SessionResults'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                      $ref: "#/components/schemas/SessionResults"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/admin/answers/{answerId}/grade:
     post:
@@ -863,22 +863,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GradeEssayRequest'
+              $ref: "#/components/schemas/GradeEssayRequest"
       responses:
-        '200':
+        "200":
           description: Ответ оценен
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnswerResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/AnswerResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
 components:
   securitySchemes:
@@ -1014,7 +1014,7 @@ components:
               type: string
               example: "Doe"
             role:
-              $ref: '#/components/schemas/UserRole'
+              $ref: "#/components/schemas/UserRole"
 
     User:
       type: object
@@ -1054,7 +1054,7 @@ components:
           nullable: true
           example: "john@example.com"
         role:
-          $ref: '#/components/schemas/UserRole'
+          $ref: "#/components/schemas/UserRole"
         createdAt:
           type: string
           format: date-time
@@ -1067,7 +1067,7 @@ components:
         - mode
       properties:
         mode:
-          $ref: '#/components/schemas/AppMode'
+          $ref: "#/components/schemas/AppMode"
         battleConfig:
           type: object
           description: Конфигурация Battle Mode (если активен)
@@ -1098,7 +1098,7 @@ components:
         - mode
       properties:
         mode:
-          $ref: '#/components/schemas/AppMode'
+          $ref: "#/components/schemas/AppMode"
         battleConfig:
           type: object
           description: Настройки для Battle Mode
@@ -1161,7 +1161,7 @@ components:
           maxLength: 100
         slug:
           type: string
-          pattern: '^[a-z0-9-]+$'
+          pattern: "^[a-z0-9-]+$"
           minLength: 1
           maxLength: 100
         description:
@@ -1177,7 +1177,7 @@ components:
           maxLength: 100
         slug:
           type: string
-          pattern: '^[a-z0-9-]+$'
+          pattern: "^[a-z0-9-]+$"
           minLength: 1
           maxLength: 100
         description:
@@ -1238,12 +1238,12 @@ components:
           type: string
           example: "q_123"
         type:
-          $ref: '#/components/schemas/QuestionType'
+          $ref: "#/components/schemas/QuestionType"
         question:
           type: string
           example: "Какие хуки используются для side effects в React?"
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
         categoryId:
           type: string
           example: "cat_123"
@@ -1283,12 +1283,12 @@ components:
           type: string
           example: "q_123"
         type:
-          $ref: '#/components/schemas/QuestionType'
+          $ref: "#/components/schemas/QuestionType"
         question:
           type: string
           example: "Какие хуки используются для side effects в React?"
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
         categoryId:
           type: string
           example: "cat_123"
@@ -1299,7 +1299,7 @@ components:
         options:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionOption'
+            $ref: "#/components/schemas/QuestionOption"
           description: Полная информация о вариантах (для multiple-select)
         penaltyPerWrong:
           type: integer
@@ -1321,7 +1321,7 @@ components:
         rubric:
           type: array
           items:
-            $ref: '#/components/schemas/EssayRubricItem'
+            $ref: "#/components/schemas/EssayRubricItem"
           description: Критерии оценивания (для essay)
         createdAt:
           type: string
@@ -1341,19 +1341,19 @@ components:
         - categoryId
       properties:
         type:
-          $ref: '#/components/schemas/QuestionType'
+          $ref: "#/components/schemas/QuestionType"
         question:
           type: string
           minLength: 10
           maxLength: 1000
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
         categoryId:
           type: string
         options:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionOption'
+            $ref: "#/components/schemas/QuestionOption"
           description: Обязательно для multiple-select
           minItems: 2
         penaltyPerWrong:
@@ -1375,7 +1375,7 @@ components:
         rubric:
           type: array
           items:
-            $ref: '#/components/schemas/EssayRubricItem'
+            $ref: "#/components/schemas/EssayRubricItem"
           description: Критерии оценивания (для essay)
 
     UpdateQuestionRequest:
@@ -1386,13 +1386,13 @@ components:
           minLength: 10
           maxLength: 1000
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
         categoryId:
           type: string
         options:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionOption'
+            $ref: "#/components/schemas/QuestionOption"
         penaltyPerWrong:
           type: integer
         minScore:
@@ -1404,7 +1404,7 @@ components:
         rubric:
           type: array
           items:
-            $ref: '#/components/schemas/EssayRubricItem'
+            $ref: "#/components/schemas/EssayRubricItem"
 
     # ============ SESSIONS ============
     CreateSessionRequest:
@@ -1417,7 +1417,7 @@ components:
           description: Фильтр по категориям (только для Game Mode)
           example: ["cat_123", "cat_456"]
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
           description: Фильтр по сложности (только для Game Mode)
         questionCount:
           type: integer
@@ -1445,14 +1445,14 @@ components:
           type: string
           example: "usr_123"
         status:
-          $ref: '#/components/schemas/SessionStatus'
+          $ref: "#/components/schemas/SessionStatus"
         mode:
-          $ref: '#/components/schemas/AppMode'
+          $ref: "#/components/schemas/AppMode"
           description: Режим, в котором создана сессия
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionPreview'
+            $ref: "#/components/schemas/QuestionPreview"
           description: Вопросы в сессии (без правильных ответов)
         totalQuestions:
           type: integer
@@ -1517,7 +1517,7 @@ components:
           type: string
           example: "q_123"
         status:
-          $ref: '#/components/schemas/AnswerStatus'
+          $ref: "#/components/schemas/AnswerStatus"
         pointsEarned:
           type: number
           format: float
@@ -1652,7 +1652,7 @@ components:
             completed - все вопросы проверены
             partial - есть непроверенные essay
         mode:
-          $ref: '#/components/schemas/AppMode'
+          $ref: "#/components/schemas/AppMode"
         totalQuestions:
           type: integer
           example: 10
@@ -1694,7 +1694,7 @@ components:
               questionId:
                 type: string
               question:
-                $ref: '#/components/schemas/QuestionPreview'
+                $ref: "#/components/schemas/QuestionPreview"
               userAnswer:
                 oneOf:
                   - type: array
@@ -1704,7 +1704,7 @@ components:
                   - type: string
                     description: Для essay
               status:
-                $ref: '#/components/schemas/AnswerStatus'
+                $ref: "#/components/schemas/AnswerStatus"
               pointsEarned:
                 type: number
                 format: float
@@ -1743,7 +1743,7 @@ components:
     # ============ ADMIN USERS ============
     UserWithStats:
       allOf:
-        - $ref: '#/components/schemas/User'
+        - $ref: "#/components/schemas/User"
         - type: object
           properties:
             stats:
@@ -1764,13 +1764,13 @@ components:
                   format: date-time
                   example: "2025-01-15T10:00:00Z"
             difficultySettings:
-              $ref: '#/components/schemas/UserDifficultySettings'
+              $ref: "#/components/schemas/UserDifficultySettings"
 
     UserDifficultySettings:
       type: object
       properties:
         difficulty:
-          $ref: '#/components/schemas/Difficulty'
+          $ref: "#/components/schemas/Difficulty"
         questionCount:
           type: integer
           example: 20
@@ -1812,7 +1812,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: "BadRequest"
             message: "Invalid difficulty level"
@@ -1822,7 +1822,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: "Unauthorized"
             message: "Authentication required"
@@ -1832,7 +1832,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: "Forbidden"
             message: "Admin access required"
@@ -1842,7 +1842,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: "NotFound"
             message: "Resource not found"
@@ -1852,7 +1852,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: "InternalServerError"
             message: "An unexpected error occurred"
