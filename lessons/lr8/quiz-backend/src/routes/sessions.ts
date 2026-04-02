@@ -1,7 +1,7 @@
 // декларация типов для TypeScript
 declare module "hono" {
   interface ContextVariableMap {
-    user: any; // Или более строгий тип
+    user: any;
   }
 }
 import { Hono } from "hono";
@@ -19,21 +19,37 @@ sessionsRoute.use("*", authMiddleware);
  * POST /api/sessions - создать новую сессию
  *
  * Возвращает:
- * - session: информация о сессии
+ * - sessionId, userId, status, mode
  * - questions: список вопросов для прохождения (без правильных ответов)
+ * - totalQuestions, answeredCount, maxScore, currentScore
+ * - createdAt, expiresAt
  */
 sessionsRoute.post("/", async (c) => {
-  // Пользователь уже в контексте после authMiddleware
   const user = c.get("user");
 
   try {
-    // 1. Получаем все вопросы из базы (с категориями)
+    // 1. Получаем параметры из тела запроса
+    const body = await c.req.json();
+    const { categoryIds, difficulty, questionCount } = body;
+
+    // 2. Строим фильтр для вопросов
+    const where: any = {};
+    if (categoryIds?.length) {
+      where.categoryId = { in: categoryIds };
+    }
+    if (difficulty) {
+      where.difficulty = difficulty;
+    }
+
+    // 3. Получаем вопросы с фильтром
     const questions = await prisma.question.findMany({
+      where,
       include: {
-        category: true, // включаем категорию для каждого вопроса
+        category: true,
       },
+      take: questionCount || undefined,
       orderBy: {
-        createdAt: "asc", // сортируем по дате создания
+        createdAt: "asc",
       },
     });
 
@@ -41,26 +57,39 @@ sessionsRoute.post("/", async (c) => {
       return c.json({ error: "No questions available" }, 400);
     }
 
-    // 2. Создаём сессию
+    // 4. Создаём сессию
     const session = await sessionService.createSession(user.id, 60);
 
-    // 3. Подготавливаем вопросы для отправки (скрываем правильные ответы)
+    // 5. Считаем максимальный балл
+    const maxScore = questions.reduce((sum, q) => sum + q.points, 0);
+
+    // 6. Подготавливаем вопросы для клиента (без правильных ответов)
     const questionsForClient = questions.map((question) => ({
       id: question.id,
       text: question.text,
       type: question.type,
-      category: question.category,
+      difficulty: question.difficulty || "medium",
+      category: {
+        id: question.category.id,
+        name: question.category.name,
+        slug: question.category.slug,
+      },
       points: question.points,
-      // ❗ НЕ отправляем correctAnswer
     }));
 
-    // 4. Возвращаем сессию + вопросы
+    // 7. Возвращаем ответ в формате OpenAPI
     return c.json({
-      session: {
-        ...session,
-        totalQuestions: questions.length,
-      },
+      sessionId: session.id,
+      userId: user.id,
+      status: session.status,
+      mode: "battle",
       questions: questionsForClient,
+      totalQuestions: questions.length,
+      answeredCount: 0,
+      maxScore: maxScore,
+      currentScore: 0,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -98,7 +127,31 @@ sessionsRoute.post("/:id/answers", async (c) => {
       userAnswer,
     );
 
-    return c.json({ answer });
+    // Определяем статус ответа
+    let status = "pending";
+    if (answer.score !== null) {
+      if (answer.isCorrect === true) {
+        status = "correct";
+      } else if (answer.score === 0) {
+        status = "incorrect";
+      } else {
+        status = "partial";
+      }
+    }
+
+    // Получаем вопрос, чтобы узнать maxPoints
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    // Возвращаем ответ в формате OpenAPI
+    return c.json({
+      answerId: answer.id,
+      questionId: answer.questionId,
+      status: status,
+      pointsEarned: answer.score ?? 0,
+      maxPoints: question?.points ?? 0,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return c.json({ error: message }, 400);
@@ -113,30 +166,61 @@ sessionsRoute.get("/:id", async (c) => {
   const sessionId = c.req.param("id");
 
   try {
-    // Сервис сам проверит, принадлежит ли сессия пользователю
+    // Получаем сессию с ответами
     const session = await sessionService.getSessionWithDetails(
       sessionId,
       user.id,
     );
 
-    // Парсим userAnswer из JSON для клиента
-    const sessionWithParsed = {
-      ...session,
-      answers: session.answers.map((answer) => ({
-        ...answer,
-        userAnswer: answer.userAnswer ? JSON.parse(answer.userAnswer) : null,
-        question: {
-          ...answer.question,
-          correctAnswer: undefined, // Не отправляем правильные ответы
-        },
-      })),
-    };
+    // Считаем прогресс
+    const answeredCount = session.answers.length;
+    const currentScore = session.answers.reduce(
+      (sum, a) => sum + (a.score ?? 0),
+      0,
+    );
 
-    return c.json({ session: sessionWithParsed });
+    // Получаем все вопросы сессии
+    const questionIds = session.answers.map((a) => a.questionId);
+    const questions = await prisma.question.findMany({
+      where: {
+        id: { in: questionIds },
+      },
+      include: { category: true },
+    });
+
+    const maxScore = questions.reduce((sum, q) => sum + q.points, 0);
+
+    // Подготавливаем вопросы для клиента
+    const questionsForClient = questions.map((q) => ({
+      id: q.id,
+      text: q.text,
+      type: q.type,
+      difficulty: q.difficulty || "medium",
+      category: {
+        id: q.category.id,
+        name: q.category.name,
+        slug: q.category.slug,
+      },
+      points: q.points,
+    }));
+
+    // Формируем ответ
+    return c.json({
+      sessionId: session.id,
+      userId: session.userId,
+      status: session.status,
+      mode: "battle",
+      questions: questionsForClient,
+      totalQuestions: questions.length,
+      answeredCount: answeredCount,
+      maxScore: maxScore,
+      currentScore: currentScore,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
 
-    // Определяем статус по сообщению об ошибке
     if (message.includes("not found")) {
       return c.json({ error: message }, 404);
     } else if (message.includes("Unauthorized")) {
@@ -155,7 +239,54 @@ sessionsRoute.post("/:id/submit", async (c) => {
 
   try {
     const session = await sessionService.submitSession(sessionId);
-    return c.json({ session });
+
+    // Получаем все ответы для подсчёта результатов
+    const answers = await prisma.answer.findMany({
+      where: { sessionId },
+      include: { question: true },
+    });
+
+    const totalQuestions = answers.length;
+    const maxScore = answers.reduce((sum, a) => sum + a.question.points, 0);
+    const earnedScore = answers.reduce((sum, a) => sum + (a.score ?? 0), 0);
+    const percentage = maxScore > 0 ? (earnedScore / maxScore) * 100 : 0;
+
+    // Вычисляем время прохождения
+    let timeSpent = undefined;
+    if (session.completedAt && session.startedAt) {
+      timeSpent = Math.floor(
+        (session.completedAt.getTime() - session.startedAt.getTime()) / 1000,
+      );
+    }
+
+    // Формируем ответ
+    return c.json({
+      sessionId: session.id,
+      userId: session.userId,
+      status: session.status === "completed" ? "completed" : "partial",
+      mode: "battle",
+      totalQuestions: totalQuestions,
+      answeredQuestions: answers.length,
+      score: {
+        earned: earnedScore,
+        max: maxScore,
+        percentage: percentage,
+      },
+      answers: answers.map((a) => ({
+        answerId: a.id,
+        questionId: a.questionId,
+        status:
+          a.score !== null
+            ? a.isCorrect
+              ? "correct"
+              : "incorrect"
+            : "pending",
+        pointsEarned: a.score,
+        maxPoints: a.question.points,
+      })),
+      completedAt: session.completedAt,
+      timeSpent: timeSpent,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return c.json({ error: message }, 400);

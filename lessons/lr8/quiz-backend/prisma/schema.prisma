@@ -32,8 +32,9 @@ model Question {
   text           String
   type           String   // "single-select", "multiple-select", "essay"
   categoryId     String
+  difficulty     String   @default("medium")
   category       Category @relation(fields: [categoryId], references: [id])
-  correctAnswer  String    // Правильные ответы для автопроверки
+  correctAnswer  String?
   points         Int      @default(1)
   answers        Answer[]
   createdAt      DateTime @default(now())
